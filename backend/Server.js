@@ -3,7 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import staffRoutes from "./routes/staffRoutes.js";
-import userRoutes from "./routes/userRoutes.js"; // ✅ Import correctly
+import userRoutes from "./routes/userRoutes.js"; 
+import router from "./routes/bookingRoutes.js";
 
 dotenv.config();
 
@@ -13,7 +14,8 @@ app.use(cors());
 
 // Mount routes
 app.use("/api/staffs", staffRoutes);
-app.use("/api/users", userRoutes); // ✅ Matches the fixed routes
+app.use("/api/users", userRoutes);
+app.use("/api/bookings", router);
 
 const port = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;
