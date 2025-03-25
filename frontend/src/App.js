@@ -8,6 +8,10 @@ import AddStaff from './components/AddStaff';
 import EditStaff from './components/EditStaff';
 import ApplyLeave from './components/ApplyLeave';
 import AdminLeaveRequests from './components/AdminLeaveRequests';
+import AdminDashboard from './pages/AdminDashboard';
+import Addpackage from './components/Addpackage';
+import PackageList from './components/Packagelist';
+import EditPackage from './components/Editpackage'; 
 
 function App() {
   return (
@@ -21,6 +25,10 @@ function App() {
       <Route path="/edit-staff/:id" element={<EditStaff/>} />
       <Route path="/apply-leave" element={<ApplyLeave />} />
       <Route path="/admin/leave-requests" element={<AdminLeaveRequests />} />
+      <Route path='/admin-dashboard' element={<AdminDashboard />} />
+        <Route path='/add' element={<Addpackage />} />
+        <Route path='/packages' element={<PackageList />} />
+        <Route path='/edit/:id' element={<EditPackage/>}/>
       </Routes>
       
     </div>

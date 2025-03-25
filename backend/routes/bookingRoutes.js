@@ -4,8 +4,13 @@ import { authenticateUser } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", authenticateUser, bookAdventure);  // Book adventure
+// Route to book an adventure
+router.post("/", authenticateUser, bookAdventure);
+
+// Route to cancel a booking, passing the date as a query parameter (e.g., /api/bookings?date=2025-03-26)
 router.delete("/", authenticateUser, cancelBooking); // Cancel booking by date
-router.get("/", authenticateUser,getUserBookings);
+
+// Route to get all user bookings
+router.get("/", authenticateUser, getUserBookings);
 
 export default router;

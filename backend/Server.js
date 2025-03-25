@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import staffRoutes from "./routes/staffRoutes.js";
 import userRoutes from "./routes/userRoutes.js"; 
 import router from "./routes/bookingRoutes.js";
+import packageRouter from "./routes/packageRoute.js";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(cors());
 app.use("/api/staffs", staffRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bookings", router);
+app.use("/api/packages", packageRouter);
 
 const port = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;

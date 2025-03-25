@@ -30,6 +30,7 @@ const BookingsPage = () => {
     const handleCancelBooking = async (date) => {
         try {
             const token = localStorage.getItem("token");
+            console.log("Token:", token);
             if (!token) {
                 setMessage("You need to be logged in to cancel a booking.");
                 return;

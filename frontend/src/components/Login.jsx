@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // We'll use `useNavigate` for redirection
 
 function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  
+  const navigate = useNavigate(); // Initialize navigate hook
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,10 +29,19 @@ function Login() {
       const response = await axios.post("http://localhost:5000/api/users/login", formData);
 
       if (response.status === 200) {
+        // Store token, username, and role in localStorage
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("userName", response.data.data.name);
+        localStorage.setItem("role", response.data.data.role); // Store user role
+
         alert("Login successful");
-        window.location.href = "/";
+
+        // Redirect based on role
+        if (response.data.data.role === "admin") {
+          navigate("/admin-dashboard"); // Redirect to admin dashboard
+        } else {
+          navigate("/"); // Redirect to the home page for regular users
+        }
       }
     } catch (error) {
       alert(error.response?.data?.message || "Login failed. Please try again.");
