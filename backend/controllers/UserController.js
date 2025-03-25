@@ -5,12 +5,10 @@ import jwt from "jsonwebtoken";
 // Get all Users
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find(); // Await the database query
-
+    const users = await User.find();
     if (!users || users.length === 0) {
       return res.status(404).json({ message: "No Users Found" });
     }
-
     return res.status(200).json({ message: "Users Found", data: users });
   } catch (error) {
     console.error(error);
@@ -21,12 +19,10 @@ export const getUsers = async (req, res) => {
 // Get User By ID
 export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id); // Await the database query
-
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: "User Not Found" });
     }
-
     return res.status(200).json({ message: "User Found", data: user });
   } catch (error) {
     console.error(error);
@@ -37,23 +33,18 @@ export const getUserById = async (req, res) => {
 // Register User
 export const registerUser = async (req, res) => {
   try {
-    const existingUser = await User.findOne({ email: req.body.email });
+    const { name, email, age, password } = req.body;
 
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User Already Exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = new User({
-      name: req.body.name,
-      email: req.body.email,
-      age: req.body.age,
-      password: hashedPassword,
-    });
-
-    await user.save(); // Save user to the database
+    const user = new User({ name, email, age, password: hashedPassword });
+    await user.save();
 
     return res.status(201).json({ message: "User Registered Successfully", user });
   } catch (error) {
@@ -65,21 +56,21 @@ export const registerUser = async (req, res) => {
 // Login User
 export const loginUser = async (req, res) => {
   try {
-    const existingUser = await User.findOne({ email: req.body.email }); // Await needed here
+    const { email, password } = req.body;
 
+    const existingUser = await User.findOne({ email });
     if (!existingUser) {
       return res.status(404).json({ message: "User Not Found" });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(req.body.password, existingUser.password);
-
+    const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
     if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid Credentials" });
     }
 
     const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    return res.status(200).json({ message: "Login Successful", token });
+    return res.status(200).json({ message: "Login Successful", token, data: existingUser });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Error When Logging In User" });
@@ -89,12 +80,7 @@ export const loginUser = async (req, res) => {
 // Logout User
 export const logoutUser = (req, res) => {
   try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-
+    // Frontend should handle token removal from localStorage
     return res.status(200).json({ message: "Logout Successful" });
   } catch (error) {
     console.error(error);
@@ -106,27 +92,30 @@ export const logoutUser = (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
+    const { name, email, age, password } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User Not Found" });
     }
 
-    // Hash password if it's being updated
+    // Hash password only if a new one is provided
     let updatedPassword = user.password;
-    if (req.body.password) {
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters long" });
+      }
       const salt = await bcrypt.genSalt(10);
-      updatedPassword = await bcrypt.hash(req.body.password, salt);
+      updatedPassword = await bcrypt.hash(password, salt);
     }
 
-    // Update user
-    user.name = req.body.name || user.name;
+    // Update user fields
+    user.name = name || user.name;
     user.password = updatedPassword;
-    user.email = req.body.email || user.email;
-    user.age = req.body.age || user.age;
+    user.email = email || user.email;
+    user.age = age || user.age;
 
     const updatedUser = await user.save();
-
     return res.status(200).json({ message: "User Updated Successfully", data: updatedUser });
   } catch (error) {
     console.error(error);
@@ -145,7 +134,6 @@ export const deleteUser = async (req, res) => {
     }
 
     await User.findByIdAndDelete(userId);
-
     return res.status(200).json({ message: "User Deleted Successfully" });
   } catch (error) {
     console.error(error);
