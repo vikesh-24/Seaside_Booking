@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import moment from "moment";
 
 export const bookAdventure = async (req, res) => {
     try {
@@ -34,27 +35,35 @@ export const bookAdventure = async (req, res) => {
 
 export const cancelBooking = async (req, res) => {
     try {
-        const { date } = req.params; // Get the date from the URL
-        const userId = req.user.id; // Extract user ID from token middleware
+        const { date } = req.query;  // Get the date from query parameters
 
+        if (!date) {
+            return res.status(400).json({ message: "Date is required to cancel a booking." });
+        }
+
+        const userId = req.user.id;  // Extract user ID from authentication
         const user = await User.findById(userId);
+
         if (!user) {
             return res.status(404).json({ message: "User not found." });
         }
 
+        // Ensure booking exists before deleting
         if (!user.bookings[date]) {
-            return res.status(400).json({ message: "No booking found for this date." });
+            return res.status(404).json({ message: "No booking found for this date." });
         }
 
-        // Remove the booking for the given date
-        delete user.bookings[date];
+        // Remove the booking from the user document
+        delete user.bookings[date];  
         await user.save();
 
         return res.status(200).json({ message: "Booking cancelled successfully." });
     } catch (error) {
+        console.error("❌ Error in cancelBooking:", error);
         return res.status(500).json({ message: "Server error. Try again later." });
     }
 };
+
 
 
 export const getUserBookings = async (req, res) => {

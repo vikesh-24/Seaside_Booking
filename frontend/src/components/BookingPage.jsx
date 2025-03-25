@@ -17,7 +17,7 @@ const BookingsPage = () => {
                 return;
             }
 
-            const response = await axios.get("http://localhost:5000/api/bookings/", {
+            const response = await axios.get("http://localhost:5000/api/bookings", {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -35,19 +35,18 @@ const BookingsPage = () => {
                 return;
             }
     
-            const encodedDate = encodeURIComponent(date); // ✅ Encode the date
-    
-            await axios.delete(`http://localhost:5000/api/bookings/${encodedDate}`, {
+            const encodedDate = encodeURIComponent(date);
+
+            await axios.delete(`http://localhost:5000/api/bookings?date=${encodedDate}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-    
+
             setMessage("Booking cancelled successfully.");
-            fetchBookings(); // Refresh the bookings list
+            setTimeout(fetchBookings, 500); // Ensure fresh data loads
         } catch (error) {
             setMessage(error.response?.data?.message || "Failed to cancel booking.");
         }
     };
-    
 
     return (
         <div className="p-4 max-w-2xl mx-auto">

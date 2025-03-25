@@ -5,7 +5,7 @@ import { authenticateUser } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 router.post("/", authenticateUser, bookAdventure);  // Book adventure
-router.delete("/:date", authenticateUser, cancelBooking); // Cancel booking by date
+router.delete("/", authenticateUser, cancelBooking); // Cancel booking by date
 router.get("/", authenticateUser,getUserBookings);
 
 export default router;
