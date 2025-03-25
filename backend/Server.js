@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import staffRoutes from "./routes/staffRoutes.js"; // ✅ Import correctly
+import staffRoutes from "./routes/staffRoutes.js";
+import userRoutes from "./routes/userRoutes.js"; // ✅ Import correctly
 
 dotenv.config();
 
@@ -11,7 +12,8 @@ app.use(express.json());
 app.use(cors());
 
 // Mount routes
-app.use("/api/staffs", staffRoutes); // ✅ Matches the fixed routes
+app.use("/api/staffs", staffRoutes);
+app.use("/api/users", userRoutes); // ✅ Matches the fixed routes
 
 const port = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;
