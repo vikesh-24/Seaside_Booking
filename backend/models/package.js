@@ -33,6 +33,7 @@ const packageSchema = new mongoose.Schema({
     }
 }, { timestamps: true }); // Adds createdAt and updatedAt timestamps
 
-const Package = mongoose.model("Package", packageSchema);
+const Package = mongoose.models.Package || mongoose.model("Package", packageSchema);
+
 
 export default Package;

@@ -42,14 +42,11 @@ const Home = () => {
 
   // Handle logout function
   const handleLogout = () => {
-    // Remove user data from localStorage
     localStorage.removeItem("userName");
     localStorage.removeItem("token");
     localStorage.removeItem("role");
-    // Update the state
     setUserName(null);
-    // Redirect to the home page or login page
-    navigate("/login");  // Redirect to login page (or home, depending on your preference)
+    navigate("/login");
   };
 
   return (
@@ -64,17 +61,12 @@ const Home = () => {
             <Link to="/home" className="hover:text-blue-300 transition">Home</Link>
             <Link to="/about" className="hover:text-blue-300 transition">About</Link>
             <Link to="/packages" className="hover:text-blue-300 transition">Packages</Link>
-            
-            {/* Show My Bookings if logged in, otherwise Booking */}
             {userName ? (
               <Link to="/my-bookings" className="hover:text-blue-300 transition">My Bookings</Link>
             ) : (
               <Link to="/book-adventure" className="hover:text-blue-300 transition">Booking</Link>
             )}
-            
             <Link to="/contact" className="hover:text-blue-300 transition">Contact</Link>
-
-            {/* Show logged-in user's name or Login link */}
             {userName ? (
               <div className="flex items-center space-x-4">
                 <span className="text-yellow-300 font-bold">Hi, {userName}!</span>
@@ -146,6 +138,14 @@ const Home = () => {
                 <p className="mt-1 text-sm text-gray-500">Price: <span className="font-medium text-blue-400">${pkg.price}</span></p>
                 <p className="text-sm text-gray-500">Capacity: {pkg.capacity} people</p>
                 <p className="text-sm text-gray-500">Available Dates: {pkg.availableDates?.map(date => new Date(date).toLocaleDateString()).join(", ")}</p>
+
+                {/* Book Now Button */}
+                <button 
+                  onClick={() => navigate(`/book-adventure?packageId=${pkg._id}`)}
+                  className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg shadow-lg hover:bg-blue-700 transition text-lg w-full"
+                >
+                  Book Now
+                </button>
               </motion.div>
             ))
           ) : (

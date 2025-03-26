@@ -29,12 +29,14 @@ function Login() {
 
     try {
       const response = await axios.post("http://localhost:5000/api/users/login", formData);
+     
 
       if (response.status === 200) {
         // Store token, username, and role in localStorage
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("userName", response.data.data.name);
-        localStorage.setItem("role", response.data.data.role); // Store user role
+        localStorage.setItem("role", response.data.data.role);
+        localStorage.setItem('userId', response.data.data._id); // Store user role
 
         alert("Login successful");
 

@@ -1,49 +1,30 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import BookingForm from "./BookingForm";
 
 const PackageList = () => {
   const [packages, setPackages] = useState([]);
+  const [selectedPackage, setSelectedPackage] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchPackages();
   }, []);
 
-  useEffect(() => {
-    console.log("Updated packages:", packages);
-  }, [packages]);
-
   const fetchPackages = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/packages/all");
-      console.log("Fetched data:", response.data);
-      
       if (response.data.data && Array.isArray(response.data.data)) {
         setPackages(response.data.data);
-      } else {
-        console.error("Unexpected data format:", response.data);
-        setPackages([]);
       }
     } catch (error) {
       console.error("Error fetching packages:", error);
     }
   };
 
-  const handleEdit = (id) => {
-    navigate(`/edit/${id}`);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this package?")) {
-      try {
-        await axios.delete(`http://localhost:5000/api/packages/delete/${id}`);
-        setPackages(packages.filter((pkg) => pkg._id !== id));
-      } catch (error) {
-        console.error("Error deleting package:", error);
-        alert("Failed to delete package. Please try again.");
-      }
-    }
+  const handleSelectPackage = (pkg) => {
+    setSelectedPackage(pkg);  // Select the package
   };
 
   return (
@@ -64,6 +45,7 @@ const PackageList = () => {
               <div
                 key={pkg._id}
                 className="bg-gray-900 shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow border border-gray-700 text-white"
+                onClick={() => handleSelectPackage(pkg)} // Select the package
               >
                 <h3 className="text-xl font-semibold text-brown-400">{pkg.title}</h3>
                 <p className="mt-2 text-gray-400">{pkg.description}</p>
@@ -76,30 +58,20 @@ const PackageList = () => {
                 <p className="text-sm text-gray-500">
                   Capacity: {pkg.capacity} people
                 </p>
-                <p className="text-sm text-gray-500">
-                  Available Dates: {pkg.availableDates.map(date => new Date(date).toLocaleDateString()).join(", ")}
-                </p>
 
-                <div className="mt-4 flex justify-between">
-                  <button
-                    onClick={() => handleEdit(pkg._id)}
-                    className="px-4 py-2 text-sm font-semibold text-white bg-brown-500 rounded-lg shadow-md hover:bg-brown-700 transition"
-                  >
-                    ✏️ Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(pkg._id)}
-                    className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg shadow-md hover:bg-red-700 transition"
-                  >
-                    🗑️ Delete
-                  </button>
-                </div>
+                {/* Selected Package Indicator */}
+                {selectedPackage && selectedPackage._id === pkg._id && (
+                  <p className="mt-2 text-sm text-green-400">Package selected!</p>
+                )}
               </div>
             ))}
           </div>
         ) : (
           <p className="text-center text-gray-400 text-lg mt-10">No packages found</p>
         )}
+        
+        {/* Show Booking Form if a package is selected */}
+        {selectedPackage && <BookingForm selectedPackage={selectedPackage} />}
       </div>
     </div>
   );

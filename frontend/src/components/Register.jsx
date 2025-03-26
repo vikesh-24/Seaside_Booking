@@ -8,6 +8,25 @@ function Register() {
     password: "",
     age: 0
   });
+  const [errors, setErrors] = useState({});
+
+  // Validation for name and age fields
+  const validate = () => {
+    let errors = {};
+
+    // Name validation (check if it contains only letters and spaces)
+    if (!/^[A-Za-z\s]+$/.test(formData.name)) {
+      errors.name = "Name can only contain letters and spaces.";
+    }
+
+    // Age validation (check if it's a positive number)
+    if (formData.age <= 0 || isNaN(formData.age)) {
+      errors.age = "Age must be a positive number.";
+    }
+
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,6 +38,10 @@ function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    if (!validate()) {
+      return; // Stop submission if validation fails
+    }
 
     if (!formData.name || !formData.email || !formData.password || !formData.age) {
       return alert("Please fill in all fields.");
@@ -41,6 +64,7 @@ function Register() {
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
         <h1 className="text-2xl font-bold text-center mb-6">Register Here!</h1>
         <form onSubmit={handleRegister} className="space-y-4">
+          {/* Name */}
           <div>
             <label htmlFor="name" className="block text-gray-700 font-medium">Name</label>
             <input
@@ -53,8 +77,10 @@ function Register() {
               required
               className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
           </div>
 
+          {/* Email */}
           <div>
             <label htmlFor="email" className="block text-gray-700 font-medium">Email</label>
             <input
@@ -69,6 +95,7 @@ function Register() {
             />
           </div>
 
+          {/* Password */}
           <div>
             <label htmlFor="password" className="block text-gray-700 font-medium">Password</label>
             <input
@@ -83,6 +110,7 @@ function Register() {
             />
           </div>
 
+          {/* Age */}
           <div>
             <label htmlFor="age" className="block text-gray-700 font-medium">Your Age</label>
             <input
@@ -94,6 +122,7 @@ function Register() {
               required
               className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+            {errors.age && <p className="text-red-500 text-sm">{errors.age}</p>}
           </div>
 
           <button
