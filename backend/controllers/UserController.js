@@ -19,7 +19,7 @@ export const getUsers = async (req, res) => {
 // Get User By ID
 export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).populate('bookings');
     if (!user) {
       return res.status(404).json({ message: "User Not Found" });
     }

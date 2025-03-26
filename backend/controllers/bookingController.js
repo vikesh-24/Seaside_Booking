@@ -1,111 +1,94 @@
+import Booking from "../models/Booking.js";
 import User from "../models/User.js";
-import Package from "../models/Package.js"; // Assuming you have a Package model to get price
-import moment from "moment";
 
-export const bookAdventure = async (req, res) => {
+export const createBooking = async(req,res) => {
+ try {
+    console.log(req.body);
+    const {user:userId,date,packageName,paymentMethod, totalPrice,numPeople} = req.body;
+   console.log(userId); 
+
+    //User Validation 
+    const existingUser = await User.findById(userId); 
+    if(!existingUser){
+        return res.status(400).json({message:"User Not Found"});
+    } 
+
+    //New Booking Creation 
+    const newBooking = new Booking({
+        user:userId,
+        date,
+        packageName,
+        paymentMethod,
+        totalPrice,
+        numPeople
+    }) 
+
+    //Save the Booking 
+    const savedBooking = await newBooking.save(); 
+    console.log(savedBooking);
+    
+    //Updating the User's booking Array 
+    existingUser.bookings.push(savedBooking._id); 
+    await existingUser.save(); 
+
+    return res.status(201).json({message:"Booking Created Successfully",booking:savedBooking});
+
+} 
+ catch (error) {
+    console.log(error);
+    return res.status(500).send("Error when Booking");
+    
+ }
+} 
+
+export const getAllBooking = async(req,res) => {
     try {
-        console.log("Received request body:", req.body);
-        const { adventureName, date, paymentMethod, packageId, numPeople } = req.body;
-
-        // Validate input fields
-        if (!adventureName || !date || !paymentMethod || !packageId || !numPeople) {
-            return res.status(400).json({ message: "All fields are required." });
-        }
-
-        // Fetch package details based on packageId
-        const adventurepackage = await Package.findById(packageId);
-        if (!adventurepackage) {
-            return res.status(404).json({ message: "Package not found." });
-        }
-
-        // Calculate the total price
-        const totalPrice = adventurepackage.price * numPeople;
-
-        const userId = req.user.id; // Assuming the user is authenticated and their ID is in the token
-        const user = await User.findById(userId);
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found." });
-        }
-
-        // Add the new booking to the map
-        const newBooking = {
-            date,
-            packageId,
-            adventureName,
-            paymentMethod,
-            totalPrice,
-            numPeople
-        };
-
-        // Update or add the new booking to the user's bookings map
-        user.bookings.set(date, newBooking);  // This adds or updates the booking for the specific date
-
-        await user.save(); // Save the updated user document
-
-        return res.status(201).json({ message: "Adventure booked successfully!" });
+        const bookings = await Booking.find(); 
+        res.status(200).json({message:"Packages booked Are", data:bookings});
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Server error. Try again later." });
+        console.log(error);
+        return res.status(500).json({message:"Error in Getting Bookings "});
+        
     }
-};
+
+} 
 
 export const cancelBooking = async (req, res) => {
     try {
-        const { date } = req.query;  // Get the date from query parameters
+        const { bookingId } = req.params; // Booking ID from params
 
-        if (!date) {
-            return res.status(400).json({ message: "Date is required to cancel a booking." });
+        // Find the booking by its ID
+        const booking = await Booking.findById(bookingId);
+        
+        if (!booking) {
+            return res.status(404).json({ message: "Booking not found" });
         }
 
-        // Validate date format
-        if (!moment(date, "YYYY-MM-DD", true).isValid()) {
-            return res.status(400).json({ message: "Invalid date format." });
+        const bookingDate = new Date(booking.date); // Date when the booking was made
+        const currentDate = new Date(); // Current date
+
+        // Calculate the difference in days between the current date and booking date
+        const diffInTime = bookingDate.getTime() - currentDate.getTime();
+        const diffInDays = diffInTime / (1000 * 3600 * 24); // Convert milliseconds to days
+
+        if (diffInDays <= 2) {
+            // If the difference is 2 days or less, allow cancellation
+            await Booking.findByIdAndDelete(bookingId);
+
+            // Optionally: Remove booking from User's booking list
+            const user = await User.findById(booking.user);
+            if (user) {
+                user.bookings = user.bookings.filter(
+                    (booking) => booking.toString() !== bookingId
+                );
+                await user.save();
+            }
+
+            return res.status(200).json({ message: "Booking canceled successfully." });
+        } else {
+            return res.status(400).json({ message: "Booking cannot be canceled as it is beyond the 2-day window." });
         }
-
-        const userId = req.user.id;  // Extract user ID from authentication
-        const user = await User.findById(userId);
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found." });
-        }
-
-        // Ensure booking exists before deleting
-        if (!user.bookings.has(date)) {  // Use .has() to check if date exists in Map
-            return res.status(404).json({ message: "No booking found for this date." });
-        }
-
-        // Optional: Check if the booking is eligible for cancellation (e.g., within 48 hours)
-        const bookingDate = moment(date);
-        const currentDate = moment();
-        if (bookingDate.isBefore(currentDate.add(2, 'days'))) {
-            return res.status(400).json({ message: "Booking cannot be cancelled within 2 days." });
-        }
-
-        // Remove the booking from the user document
-        user.bookings.delete(date);  // Correctly delete the booking from the Map
-        await user.save();
-
-        return res.status(200).json({ message: "Booking cancelled successfully." });
     } catch (error) {
-        console.error("❌ Error in cancelBooking:", error);
-        return res.status(500).json({ message: "Server error. Try again later." });
-    }
-};
-
-
-export const getUserBookings = async (req, res) => {
-    try {
-        const userId = req.user.id; // Extract user ID from token middleware
-        const user = await User.findById(userId);
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found." });
-        }
-
-        return res.status(200).json({ bookings: user.bookings });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Server error. Try again later." });
+        return res.status(500).json({ message: "Error canceling the booking", error });
     }
 };

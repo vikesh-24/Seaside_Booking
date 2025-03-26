@@ -1,108 +1,99 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Importing useNavigate
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const BookingsPage = () => {
-    const [bookings, setBookings] = useState([]); // Initialize as an empty array
-    const [message, setMessage] = useState("");
-    const navigate = useNavigate(); // Initialize useNavigate hook
+function BookingPage() {
+  const [bookings, setBookings] = useState([]); // To store fetched bookings
+  const [message, setMessage] = useState(""); // To show messages (like errors or success)
 
-    // Declare the fetchBookings function outside of useEffect so that it can be used in other parts of the code
-    
+  // Fetch bookings function
+  const fetchBookings = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMessage("You need to be logged in to view your bookings.");
+        return;
+      }
 
-    useEffect(() => {
-        const fetchBookings = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                if (!token) {
-                    setMessage("You need to be logged in to view your bookings.");
-                    return;
-                }
-    
-                const response = await axios.get("http://localhost:5000/api/bookings/", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-    
-                console.log("Fetched Bookings Data:", response.data.bookings); // Log the bookings data
-    
-                setBookings(response.data.bookings); // Update state with bookings data
-            } catch (error) {
-                setMessage(error.response?.data?.message || "Failed to fetch bookings.");
-            }
-        };
-        
-        fetchBookings(); // Fetch bookings when the component mounts
-    }, []);
+      const response = await axios.get("http://localhost:5000/api/bookings/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const handleCancelBooking = async (date) => {
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                setMessage("You need to be logged in to cancel a booking.");
-                return;
-            }
+      console.log("Fetched Bookings:", response.data.data);
 
-            const encodedDate = encodeURIComponent(date);
+      const formattedBookings = response.data.data || [];
+      setBookings(formattedBookings);
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Failed to fetch bookings.");
+    }
+  };
 
-            await axios.delete(`http://localhost:5000/api/bookings?date=${encodedDate}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+  // Handle booking cancellation
+  const handleCancelBooking = async (date) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMessage("You need to be logged in to cancel a booking.");
+        return;
+      }
 
-            setMessage("Booking cancelled successfully.");
-            setTimeout(fetchBookings, 500); // Ensure fresh data loads after cancellation
-        } catch (error) {
-            setMessage(error.response?.data?.message || "Failed to cancel booking.");
-        }
-    };
+      const encodedDate = encodeURIComponent(date);
 
-    // Button click to navigate to the booking form page
-    const handleBookAdventure = () => {
-        navigate('/book-adventure'); // Navigate to '/book-adventure' route
-    };
+      await axios.delete(`http://localhost:5000/api/bookings?date=${encodedDate}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    return (
-        <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 flex justify-center items-center">
-            <div className="p-6 max-w-2xl mx-auto bg-white shadow-lg rounded-3xl border-4 border-blue-300 transition-all transform hover:scale-105 duration-300 ease-in-out">
-                <h2 className="text-2xl font-bold text-center mb-6 text-blue-600">My Booked Adventures</h2>
+      setMessage("Booking cancelled successfully.");
+      setTimeout(fetchBookings, 500); // Refresh bookings after cancellation
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Failed to cancel booking.");
+    }
+  };
 
-                {message && <p className="text-center text-red-500">{message}</p>}
+  useEffect(() => {
+    fetchBookings(); // Fetch bookings on component mount
+  }, []);
 
-                {Array.isArray(bookings) && bookings.length === 0 ? (
-                    <p className="text-center text-gray-500">No bookings found.</p>
-                ) : (
-                    <ul className="space-y-4">
-                        {Array.isArray(bookings) ? (
-                            bookings.map((details, index) => (
-                                <li key={index} className="p-4 border rounded-lg shadow flex justify-between items-center transition-all hover:scale-105 duration-300 ease-in-out">
-                                    <div>
-                                        <h3 className="text-lg font-semibold">{details.adventureName}</h3>
-                                        <p className="text-sm text-gray-600">Date: {details.date}</p>
-                                        <p className="text-sm">Payment Method: {details.paymentMethod}</p>
-                                    </div>
-                                    <button
-                                        onClick={() => handleCancelBooking(details.date)}
-                                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300"
-                                    >
-                                        Cancel
-                                    </button>
-                                </li>
-                            ))
-                        ) : (
-                            <p className="text-center text-red-500">Something went wrong. Please try again later.</p>
-                        )}
-                    </ul>
-                )}
+  return (
+    <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 flex justify-center items-center">
+      <div className="p-6 max-w-2xl mx-auto bg-white shadow-lg rounded-3xl border-4 border-blue-300 transition-all transform hover:scale-105 duration-300 ease-in-out">
+        <h2 className="text-2xl font-bold text-center mb-6 text-blue-600">My Booked Adventures</h2>
 
-                {/* Button to navigate to Book Adventure page */}
+        {message && <p className="text-center text-red-500">{message}</p>}
+
+        {bookings.length === 0 ? (
+          <p className="text-center text-gray-500">No bookings found.</p>
+        ) : (
+          <ul className="space-y-4">
+            {bookings.map((booking, index) => (
+              <li
+                key={index}
+                className="p-4 border rounded-lg shadow flex justify-between items-center transition-all hover:scale-105 duration-300 ease-in-out"
+              >
+                <div>
+                  <h3 className="text-lg font-semibold">{booking.packageName}</h3>
+                  <p className="text-sm text-gray-600">Date: {new Date(booking.date).toLocaleDateString()}</p>
+                  <p className="text-sm">Payment Method: {booking.paymentMethod}</p>
+                </div>
                 <button
-                    onClick={handleBookAdventure}
-                    className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 transform hover:scale-105"
+                  onClick={() => handleCancelBooking(booking.date)}
+                  className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300"
                 >
-                    Book an Adventure
+                  Cancel
                 </button>
-            </div>
-        </div>
-    );
-};
+              </li>
+            ))}
+          </ul>
+        )}
 
-export default BookingsPage;
+        <button
+          onClick={() => window.location.href = "/book-adventure"}
+          className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 transform hover:scale-105"
+        >
+          Book an Adventure
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default BookingPage;

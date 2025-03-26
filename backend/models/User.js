@@ -6,17 +6,12 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true },
     age: { type: Number, required: true },
     password: { type: String, required: true },
-    bookings: {
-      type: Map,
-      of: new mongoose.Schema({
-        date: { type: String, required: true },
-        packageId: { type: String, required: true },
-        adventureName: { type: String, required: true },
-        paymentMethod: { type: String, required: true },
-        totalPrice: { type: Number, required: true },
-        numPeople: { type: Number, required: true },
-      }),
-    },
+    bookings: [
+      {
+        type:mongoose.Schema.Types.ObjectId,
+        ref : 'Booking'
+      }
+    ],
     role: { type: String, default: "user" },
   },
   { minimize: false }

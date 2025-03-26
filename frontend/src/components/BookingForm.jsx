@@ -53,7 +53,7 @@ const BookingForm = () => {
     // Handle booking submission
     const handleBooking = async (e) => {
         e.preventDefault();
-        setMessage("");
+        setMessage(""); // Clear any previous message
 
         try {
             const token = localStorage.getItem("token");
@@ -62,16 +62,41 @@ const BookingForm = () => {
                 return;
             }
 
+           const userId = localStorage.getItem("userId");
+           
+           // Assuming the userId is stored in the token
+
+            // Check if userId exists
+            if (!userId) {
+                setMessage("User ID is missing. Please log in again.");
+                return;
+            }
+
+            // Prepare booking data
+            const bookingData = {
+                userId, // Add userId to the booking data
+                packageId,
+                adventureName,
+                date,
+                paymentMethod,
+                totalPrice,
+                numPeople,
+            };
+
             const response = await axios.post(
-                "http://localhost:5000/api/bookings/",
-                { packageId, adventureName, date, paymentMethod, totalPrice, numPeople },
-                { headers: { Authorization: `Bearer ${token}` } }
+                "http://localhost:5000/api/bookings/", // API endpoint to add a new booking
+                bookingData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
             );
-            console.log(response.data);
 
             setMessage(response.data.message || "Booking successful!");
         } catch (error) {
-            setMessage(error.response?.data?.message || "Booking failed");
+            console.error(error);
+            setMessage(error.response?.data?.message || "Booking failed.");
         }
     };
 
