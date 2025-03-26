@@ -1,44 +1,40 @@
 import Booking from "../models/Booking.js";
 import User from "../models/User.js";
 
-export const createBooking = async(req,res) => {
- try {
-    console.log(req.body);
-    const {user:userId,date,packageName,paymentMethod, totalPrice,numPeople} = req.body; 
-
-    //User Validation 
-    const existingUser = await User.findById(userId); 
-    if(!existingUser){
-        return res.status(400).json({message:"User Not Found"});
-    } 
-
-    //New Booking Creation 
-    const newBooking = new Booking({
-        user:userId,
-        date,
-        packageName,
-        paymentMethod,
-        totalPrice,
-        numPeople
-    }) 
-
-    //Save the Booking 
-    const savedBooking = await newBooking.save(); 
-    console.log(savedBooking);
-    
-    //Updating the User's booking Array 
-    existingUser.bookings.push(savedBooking._id); 
-    await existingUser.save(); 
-
-    return res.status(201).json({message:"Booking Created Successfully",booking:savedBooking});
-
-} 
- catch (error) {
-    console.log(error);
-    return res.status(500).send("Error when Booking");
-    
- }
-} 
+export const createBooking = async (req, res) => {
+    try {
+      console.log("Received Data:", req.body);
+  
+      const { userId, date, packageName, paymentMethod, totalPrice, numPeople } = req.body;
+  
+      // Check for missing fields
+      if (!userId || !date || !packageName || !paymentMethod || !totalPrice || !numPeople) {
+        return res.status(400).json({ message: "Missing required fields", received: req.body });
+      }
+  
+      // Check if user exists
+      const existingUser = await User.findById(userId);
+      if (!existingUser) {
+        return res.status(400).json({ message: "User Not Found" });
+      }
+  
+      // Create booking
+      const newBooking = new Booking({ user: userId, date, packageName, paymentMethod, totalPrice, numPeople });
+  
+      const savedBooking = await newBooking.save();
+  
+      // Update user's booking list
+      existingUser.bookings.push(savedBooking._id);
+      await existingUser.save();
+  
+      return res.status(201).json({ message: "Booking Created Successfully", booking: savedBooking });
+  
+    } catch (error) {
+      console.error("Booking Error:", error);
+      return res.status(500).json({ message: "Server Error", error: error.message });
+    }
+  };
+  
 
 export const getAllBooking = async(req,res) => {
     try {
