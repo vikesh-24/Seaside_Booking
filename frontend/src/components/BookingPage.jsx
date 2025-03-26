@@ -28,24 +28,20 @@ function BookingPage() {
   };
 
   // Handle booking cancellation
-  const handleCancelBooking = async (date) => {
+  const handleCancelBooking = async (bookingId) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setMessage("You need to be logged in to cancel a booking.");
-        return;
-      }
-
-      const encodedDate = encodeURIComponent(date);
-
-      await axios.delete(`http://localhost:5000/api/bookings?date=${encodedDate}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await axios.delete(`http://localhost:5000/api/bookings/cancel/${bookingId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // Optional: If required for auth
+        },
       });
-
-      setMessage("Booking cancelled successfully.");
-      setTimeout(fetchBookings, 500); // Refresh bookings after cancellation
-    } catch (error) {
-      setMessage(error.response?.data?.message || "Failed to cancel booking.");
+      console.log("Booking canceled:", response.data);
+      // Optionally, update your state to reflect the cancellation
+      setBookings(bookings.filter(booking => booking._id !== bookingId)); // Remove the canceled booking from UI
+    } catch (err) {
+      console.error("Error canceling booking:", err.response?.data || err);
+      // Optionally, show a message to the user
     }
   };
 
@@ -75,7 +71,7 @@ function BookingPage() {
                   <p className="text-sm">Payment Method: {booking.paymentMethod}</p>
                 </div>
                 <button
-                  onClick={() => handleCancelBooking(booking.date)}
+                  onClick={() => handleCancelBooking(booking._id)} // Use booking._id for cancellation
                   className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300"
                 >
                   Cancel

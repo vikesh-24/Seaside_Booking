@@ -50,29 +50,30 @@ export const getAllBooking = async(req,res) => {
 
 export const cancelBooking = async (req, res) => {
     try {
-        const { bookingId } = req.params; // Booking ID from params
-
-        // Find the booking by its ID
-        const booking = await Booking.findById(bookingId);
-        
-        if (!booking) {
-            return res.status(404).json({ message: "Booking not found" });
-        }
-
-        // Remove the booking from the database
-        await Booking.findByIdAndDelete(bookingId);
-
-        // Optionally: Remove booking from User's booking list
-        const user = await User.findById(booking.user);
-        if (user) {
-            user.bookings = user.bookings.filter(
-                (booking) => booking.toString() !== bookingId
-            );
-            await user.save();
-        }
-
-        return res.status(200).json({ message: "Booking canceled successfully." });
+      const { bookingId } = req.params; // Get bookingId from the URL params
+  
+      // Find the booking by ID
+      const booking = await Booking.findById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+  
+      // Remove the booking from the database
+      await Booking.findByIdAndDelete(bookingId);
+  
+      // Optionally: Remove booking from the User's bookings array
+      const user = await User.findById(booking.user);
+      if (user) {
+        user.bookings = user.bookings.filter(
+          (booking) => booking.toString() !== bookingId
+        );
+        await user.save();
+      }
+  
+      return res.status(200).json({ message: "Booking canceled successfully." });
     } catch (error) {
-        return res.status(500).json({ message: "Error canceling the booking", error });
+      console.error("Error canceling booking:", error);
+      return res.status(500).json({ message: "Error canceling the booking", error });
     }
-};
+  };
+  
