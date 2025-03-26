@@ -4,8 +4,7 @@ import User from "../models/User.js";
 export const createBooking = async(req,res) => {
  try {
     console.log(req.body);
-    const {user:userId,date,packageName,paymentMethod, totalPrice,numPeople} = req.body;
-   console.log(userId); 
+    const {user:userId,date,packageName,paymentMethod, totalPrice,numPeople} = req.body; 
 
     //User Validation 
     const existingUser = await User.findById(userId); 
@@ -64,30 +63,19 @@ export const cancelBooking = async (req, res) => {
             return res.status(404).json({ message: "Booking not found" });
         }
 
-        const bookingDate = new Date(booking.date); // Date when the booking was made
-        const currentDate = new Date(); // Current date
+        // Remove the booking from the database
+        await Booking.findByIdAndDelete(bookingId);
 
-        // Calculate the difference in days between the current date and booking date
-        const diffInTime = bookingDate.getTime() - currentDate.getTime();
-        const diffInDays = diffInTime / (1000 * 3600 * 24); // Convert milliseconds to days
-
-        if (diffInDays <= 2) {
-            // If the difference is 2 days or less, allow cancellation
-            await Booking.findByIdAndDelete(bookingId);
-
-            // Optionally: Remove booking from User's booking list
-            const user = await User.findById(booking.user);
-            if (user) {
-                user.bookings = user.bookings.filter(
-                    (booking) => booking.toString() !== bookingId
-                );
-                await user.save();
-            }
-
-            return res.status(200).json({ message: "Booking canceled successfully." });
-        } else {
-            return res.status(400).json({ message: "Booking cannot be canceled as it is beyond the 2-day window." });
+        // Optionally: Remove booking from User's booking list
+        const user = await User.findById(booking.user);
+        if (user) {
+            user.bookings = user.bookings.filter(
+                (booking) => booking.toString() !== bookingId
+            );
+            await user.save();
         }
+
+        return res.status(200).json({ message: "Booking canceled successfully." });
     } catch (error) {
         return res.status(500).json({ message: "Error canceling the booking", error });
     }

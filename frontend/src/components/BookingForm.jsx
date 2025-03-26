@@ -1,18 +1,41 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode"; // Import jwt-decode
 
 const BookingForm = () => {
     const [searchParams] = useSearchParams();
     const packageId = searchParams.get("packageId");
 
-    const [adventureName, setAdventureName] = useState("");
+    const [packageName, setPackageName] = useState("");
     const [price, setPrice] = useState(0); // Store package price
     const [date, setDate] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("online");
     const [numPeople, setNumPeople] = useState(1); // Store number of people
     const [totalPrice, setTotalPrice] = useState(0); // Store calculated total price
     const [message, setMessage] = useState("");
+    const [userId, setUserId] = useState(""); // Store extracted userId
+
+    // Decode token and extract userId
+    useEffect(() => {
+        const token = localStorage.getItem("token"); 
+        console.log("Stored Token:", token); 
+    
+        if (token) {
+            try {
+                const decoded = jwtDecode(token);
+                console.log("Decoded Token:", decoded); 
+    
+                setUserId(decoded.id); // ✅ Fix: Use 'id' instead of 'userId'
+            } catch (error) {
+                console.error("Error decoding token:", error);
+                setMessage("Invalid authentication. Please log in again.");
+            }
+        } else {
+            console.log("No token found in localStorage.");
+        }
+    }, []); 
+    
 
     useEffect(() => {
         if (packageId) {
@@ -25,7 +48,7 @@ const BookingForm = () => {
         try {
             const response = await axios.get(`http://localhost:5000/api/packages/${id}`);
             if (response.data.data) {
-                setAdventureName(response.data.data.title);
+                setPackageName(response.data.data.title);
                 setPrice(response.data.data.price); // Set the price from the package
             }
         } catch (error) {
@@ -62,26 +85,16 @@ const BookingForm = () => {
                 return;
             }
 
-           const userId = localStorage.getItem("userId");
-           
-           // Assuming the userId is stored in the token
-
-            // Check if userId exists
-            if (!userId) {
-                setMessage("User ID is missing. Please log in again.");
-                return;
-            }
-
             // Prepare booking data
             const bookingData = {
-                userId, // Add userId to the booking data
-                packageId,
-                adventureName,
+                userId, // Extracted from decoded token
+                packageName,
                 date,
                 paymentMethod,
                 totalPrice,
                 numPeople,
             };
+            console.log("Before",bookingData);
 
             const response = await axios.post(
                 "http://localhost:5000/api/bookings/", // API endpoint to add a new booking
@@ -92,6 +105,7 @@ const BookingForm = () => {
                     },
                 }
             );
+            console.log("Axios response",response);
 
             setMessage(response.data.message || "Booking successful!");
         } catch (error) {
@@ -111,8 +125,8 @@ const BookingForm = () => {
                     {/* Adventure Name (Read-only) */}
                     <input
                         type="text"
-                        placeholder="Adventure Name"
-                        value={adventureName}
+                        placeholder="Package Name"
+                        value={packageName}
                         readOnly
                         className="w-full p-3 border border-blue-300 rounded-lg bg-gray-100"
                     />
