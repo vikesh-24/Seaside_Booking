@@ -6,6 +6,7 @@ import staffRoutes from "./routes/staffRoutes.js";
 import userRoutes from "./routes/userRoutes.js"; 
 import router from "./routes/bookingRoutes.js";
 import packageRouter from "./routes/packageRoute.js";
+import transactionRouter from "./routes/transactionRoute.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use("/api/staffs", staffRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bookings", router);
 app.use("/api/packages", packageRouter);
+app.use("/api/transaction", transactionRouter); 
 
 const port = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;

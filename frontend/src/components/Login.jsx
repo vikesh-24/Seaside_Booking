@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // We'll use `useNavigate` for redirection
+import { Eye, EyeOff } from "lucide-react"; // Importing Eye and EyeOff icons from Lucide
 
 function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   
   const navigate = useNavigate(); // Initialize navigate hook
 
@@ -40,7 +42,7 @@ function Login() {
         if (response.data.data.role === "admin") {
           navigate("/admin-dashboard"); // Redirect to admin dashboard
         } else {
-          navigate("/"); // Redirect to the home page for regular users
+          navigate("/home"); // Redirect to the home page for regular users
         }
       }
     } catch (error) {
@@ -67,15 +69,28 @@ function Login() {
           </div>
           <div>
             <label htmlFor="password" className="block text-gray-700 font-medium">Password</label>
-            <input
-              type="password"
-              name="password"
-              id="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"} // Toggle password visibility
+                name="password"
+                id="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)} // Toggle the state
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? (
+                  <EyeOff size={20} className="text-gray-600" /> // EyeOff icon when password is visible
+                ) : (
+                  <Eye size={20} className="text-gray-600" /> // Eye icon when password is hidden
+                )}
+              </button>
+            </div>
           </div>
           <span className="block text-center text-gray-600">
             Don't have an account? <a href="/signup" className="text-blue-600 hover:underline">Sign Up</a>

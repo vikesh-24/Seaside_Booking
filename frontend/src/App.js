@@ -12,6 +12,10 @@ import AdminDashboard from './pages/AdminDashboard';
 import Addpackage from './components/Addpackage';
 import PackageList from './components/Packagelist';
 import EditPackage from './components/Editpackage'; 
+import AddTransaction from './components/AddTransaction';
+import TransactionList from './components/Transactionlist';
+import EditTransaction from './components/EditTransaction';
+import Home from './pages/Homepage';
 
 function App() {
   return (
@@ -29,6 +33,10 @@ function App() {
         <Route path='/add' element={<Addpackage />} />
         <Route path='/packages' element={<PackageList />} />
         <Route path='/edit/:id' element={<EditPackage/>}/>
+        <Route path='addTransaction' element={<AddTransaction/>}/>
+        <Route path='transactionList' element={<TransactionList/>}/>
+        <Route path='/editTransaction/:id' element={<EditTransaction/>}/>
+        <Route path='/home' element={<Home/>}/>
       </Routes>
       
     </div>
