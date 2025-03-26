@@ -11,6 +11,6 @@ router.post("/", authenticateUser, bookAdventure);
 router.delete("/", authenticateUser, cancelBooking); // Cancel booking by date
 
 // Route to get all user bookings
-router.get("/all", authenticateUser, getUserBookings);
+router.get("/", authenticateUser, getUserBookings);
 
 export default router;

@@ -16,6 +16,7 @@ import AddTransaction from './components/AddTransaction';
 import TransactionList from './components/Transactionlist';
 import EditTransaction from './components/EditTransaction';
 import Home from './pages/Homepage';
+import BookingAnalysis from './components/BookingAnalysis';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
         <Route path='transactionList' element={<TransactionList/>}/>
         <Route path='/editTransaction/:id' element={<EditTransaction/>}/>
         <Route path='/home' element={<Home/>}/>
+        <Route path='/book/analysis' element={<BookingAnalysis/>}/>
       </Routes>
       
     </div>

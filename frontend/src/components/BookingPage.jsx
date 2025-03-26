@@ -3,34 +3,36 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Importing useNavigate
 
 const BookingsPage = () => {
-    const [bookings, setBookings] = useState({});
-    const [filteredBookings, setFilteredBookings] = useState({});
+    const [bookings, setBookings] = useState([]); // Initialize as an empty array
     const [message, setMessage] = useState("");
-    const [searchDate, setSearchDate] = useState(""); // State for the search input
     const navigate = useNavigate(); // Initialize useNavigate hook
 
+    // Declare the fetchBookings function outside of useEffect so that it can be used in other parts of the code
+    
+
     useEffect(() => {
-        fetchBookings();
-    }, []);
-
-    const fetchBookings = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                setMessage("You need to be logged in to view your bookings.");
-                return;
+        const fetchBookings = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    setMessage("You need to be logged in to view your bookings.");
+                    return;
+                }
+    
+                const response = await axios.get("http://localhost:5000/api/bookings/", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+    
+                console.log("Fetched Bookings Data:", response.data.bookings); // Log the bookings data
+    
+                setBookings(response.data.bookings); // Update state with bookings data
+            } catch (error) {
+                setMessage(error.response?.data?.message || "Failed to fetch bookings.");
             }
-
-            const response = await axios.get("http://localhost:5000/api/bookings", {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            setBookings(response.data.bookings);
-            setFilteredBookings(response.data.bookings); // Initially set all bookings as filtered
-        } catch (error) {
-            setMessage(error.response?.data?.message || "Failed to fetch bookings.");
-        }
-    };
+        };
+        
+        fetchBookings(); // Fetch bookings when the component mounts
+    }, []);
 
     const handleCancelBooking = async (date) => {
         try {
@@ -47,25 +49,9 @@ const BookingsPage = () => {
             });
 
             setMessage("Booking cancelled successfully.");
-            setTimeout(fetchBookings, 500); // Ensure fresh data loads
+            setTimeout(fetchBookings, 500); // Ensure fresh data loads after cancellation
         } catch (error) {
             setMessage(error.response?.data?.message || "Failed to cancel booking.");
-        }
-    };
-
-    // Handle date search input change
-    const handleSearchChange = (e) => {
-        const date = e.target.value;
-        setSearchDate(date);
-
-        // Filter bookings by the entered date
-        if (date) {
-            const filtered = Object.entries(bookings).filter(([bookingDate, details]) => {
-                return bookingDate.includes(date); // Matches the entered date (partial match)
-            });
-            setFilteredBookings(Object.fromEntries(filtered));
-        } else {
-            setFilteredBookings(bookings); // Show all bookings if no date is entered
         }
     };
 
@@ -81,36 +67,29 @@ const BookingsPage = () => {
 
                 {message && <p className="text-center text-red-500">{message}</p>}
 
-                {/* Search Input */}
-                <div className="mb-4">
-                    <input
-                        type="date"
-                        value={searchDate}
-                        onChange={handleSearchChange}
-                        className="w-full p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-300 ease-in-out"
-                        placeholder="Search by Date"
-                    />
-                </div>
-
-                {Object.keys(filteredBookings).length === 0 ? (
+                {Array.isArray(bookings) && bookings.length === 0 ? (
                     <p className="text-center text-gray-500">No bookings found.</p>
                 ) : (
                     <ul className="space-y-4">
-                        {Object.entries(filteredBookings).map(([date, details]) => (
-                            <li key={date} className="p-4 border rounded-lg shadow flex justify-between items-center transition-all hover:scale-105 duration-300 ease-in-out">
-                                <div>
-                                    <h3 className="text-lg font-semibold">{details.adventureName}</h3>
-                                    <p className="text-sm text-gray-600">Date: {date}</p>
-                                    <p className="text-sm">Payment Method: {details.paymentMethod}</p>
-                                </div>
-                                <button
-                                    onClick={() => handleCancelBooking(date)}
-                                    className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300"
-                                >
-                                    Cancel
-                                </button>
-                            </li>
-                        ))}
+                        {Array.isArray(bookings) ? (
+                            bookings.map((details, index) => (
+                                <li key={index} className="p-4 border rounded-lg shadow flex justify-between items-center transition-all hover:scale-105 duration-300 ease-in-out">
+                                    <div>
+                                        <h3 className="text-lg font-semibold">{details.adventureName}</h3>
+                                        <p className="text-sm text-gray-600">Date: {details.date}</p>
+                                        <p className="text-sm">Payment Method: {details.paymentMethod}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => handleCancelBooking(details.date)}
+                                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300"
+                                    >
+                                        Cancel
+                                    </button>
+                                </li>
+                            ))
+                        ) : (
+                            <p className="text-center text-red-500">Something went wrong. Please try again later.</p>
+                        )}
                     </ul>
                 )}
 

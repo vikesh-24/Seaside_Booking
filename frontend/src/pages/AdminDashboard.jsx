@@ -63,10 +63,10 @@ const AdminDashboard = () => {
                         </li>
                         <li>
                             <Link 
-                                to="/admin/settings" 
+                                to="/book/analysis" 
                                 className="block px-6 py-2 hover:bg-blue-700 transition"
                             >
-                                Settings
+                               Books
                             </Link>
                         </li>
                     </ul>

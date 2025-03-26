@@ -67,6 +67,7 @@ const BookingForm = () => {
                 { packageId, adventureName, date, paymentMethod, totalPrice, numPeople },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+            console.log(response.data);
 
             setMessage(response.data.message || "Booking successful!");
         } catch (error) {

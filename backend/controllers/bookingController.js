@@ -28,17 +28,18 @@ export const bookAdventure = async (req, res) => {
             return res.status(404).json({ message: "User not found." });
         }
 
-        // Add the new booking to the array
+        // Add the new booking to the map
         const newBooking = {
             date,
             packageId,
             adventureName,
             paymentMethod,
             totalPrice,
+            numPeople
         };
 
-        // Update or add the new booking
-        user.bookings.set(date, newBooking); // This will update or set the booking for the specific date
+        // Update or add the new booking to the user's bookings map
+        user.bookings.set(date, newBooking);  // This adds or updates the booking for the specific date
 
         await user.save(); // Save the updated user document
 
@@ -70,7 +71,7 @@ export const cancelBooking = async (req, res) => {
         }
 
         // Ensure booking exists before deleting
-        if (!user.bookings[date]) {
+        if (!user.bookings.has(date)) {  // Use .has() to check if date exists in Map
             return res.status(404).json({ message: "No booking found for this date." });
         }
 
@@ -82,7 +83,7 @@ export const cancelBooking = async (req, res) => {
         }
 
         // Remove the booking from the user document
-        delete user.bookings[date];  
+        user.bookings.delete(date);  // Correctly delete the booking from the Map
         await user.save();
 
         return res.status(200).json({ message: "Booking cancelled successfully." });
@@ -91,6 +92,7 @@ export const cancelBooking = async (req, res) => {
         return res.status(500).json({ message: "Server error. Try again later." });
     }
 };
+
 
 export const getUserBookings = async (req, res) => {
     try {
