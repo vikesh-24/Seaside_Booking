@@ -9,26 +9,36 @@ function BookingPage() {
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
+      const userId = localStorage.getItem("userId");
+  
+      if (!token || !userId) {
         setMessage("You need to be logged in to view your bookings.");
         return;
       }
-
-      const response = await axios.get("http://localhost:5000/api/bookings/", {
+  
+      const response = await axios.get(`http://localhost:5000/api/bookings/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+  
       console.log("Fetched Bookings:", response.data.data);
-
+  
       const formattedBookings = response.data.data || [];
       setBookings(formattedBookings);
     } catch (error) {
       setMessage(error.response?.data?.message || "Failed to fetch bookings.");
     }
   };
-
+  
+  
   // Handle booking cancellation
   const handleCancelBooking = async (bookingId) => {
+    // Ask for confirmation before canceling
+    const isConfirmed = window.confirm("Are you sure you want to cancel this booking?");
+    
+    if (!isConfirmed) {
+      return; // Do nothing if user cancels
+    }
+
     try {
       const response = await axios.delete(`http://localhost:5000/api/bookings/cancel/${bookingId}`, {
         headers: {
@@ -37,7 +47,7 @@ function BookingPage() {
         },
       });
       console.log("Booking canceled:", response.data);
-      // Optionally, update your state to reflect the cancellation
+      // Update state to reflect the cancellation
       setBookings(bookings.filter(booking => booking._id !== bookingId)); // Remove the canceled booking from UI
     } catch (err) {
       console.error("Error canceling booking:", err.response?.data || err);

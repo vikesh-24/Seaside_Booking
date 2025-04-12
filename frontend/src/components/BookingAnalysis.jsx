@@ -3,30 +3,30 @@ import axios from 'axios';
 import { jsPDF } from 'jspdf'; // Import jsPDF
 
 function BookingAnalysis() {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [bookings, setBookings] = useState([]); // To store all the bookings
+  const [loading, setLoading] = useState(true); // To handle loading state
 
   // Fetch all bookings
   useEffect(() => {
     async function fetchBookings() {
       try {
-        const response = await axios.get('http://localhost:5000/api/bookings/'); // Adjust the API endpoint
-        setBookings(response.data.bookings);
-        setLoading(false);
+        const response = await axios.get('http://localhost:5000/api/bookings/'); // Adjust the API endpoint if needed
+        setBookings(response.data.bookings); // Ensure the response contains the 'bookings' array
+        setLoading(false); // Set loading to false after fetching the bookings
       } catch (error) {
         console.error('Error fetching bookings:', error);
-        setLoading(false);
+        setLoading(false); // In case of error, stop loading
       }
     }
 
-    fetchBookings();
+    fetchBookings(); // Call the fetchBookings function on component mount
   }, []);
 
   // Handle deleting a booking
   const handleDelete = async (date) => {
     try {
-      await axios.delete(`/api/bookings/${date}`); // Adjust the API endpoint
-      setBookings(bookings.filter(booking => booking.date !== date));
+      await axios.delete(`/api/bookings/can/${date}`); // Adjust the API endpoint as needed
+      setBookings(bookings.filter(booking => booking.date !== date)); // Remove the deleted booking from the UI
     } catch (error) {
       console.error('Error deleting booking:', error);
     }
@@ -39,8 +39,8 @@ function BookingAnalysis() {
     if (updatedAdventureName) {
       try {
         const updatedBooking = { adventureName: updatedAdventureName };
-        await axios.put(`/api/bookings/${date}`, updatedBooking); // Adjust the API endpoint
-        setBookings(bookings.map(booking => booking.date === date ? { ...booking, adventureName: updatedAdventureName } : booking));
+        await axios.put(`/api/bookings/${date}`, updatedBooking); // Adjust the API endpoint as needed
+        setBookings(bookings.map(booking => booking.date === date ? { ...booking, adventureName: updatedAdventureName } : booking)); // Update the state
       } catch (error) {
         console.error('Error updating booking:', error);
       }
@@ -81,6 +81,7 @@ function BookingAnalysis() {
         <p>Loading bookings...</p>
       ) : (
         <div>
+          {/* Button to generate the booking report */}
           <button 
             onClick={generateReport} 
             className="btn btn-primary mb-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
@@ -88,6 +89,7 @@ function BookingAnalysis() {
             Generate Report
           </button>
 
+          {/* Table displaying all the bookings */}
           <table className="min-w-full table-auto bg-white shadow-md rounded-lg">
             <thead>
               <tr className="bg-gray-100">
@@ -106,12 +108,14 @@ function BookingAnalysis() {
                   <td className="px-4 py-2">{booking.paymentMethod}</td>
                   <td className="px-4 py-2">{booking.totalPrice}</td>
                   <td className="px-4 py-2">
+                    {/* Update button */}
                     <button 
                       onClick={() => handleUpdate(booking.date)} 
                       className="bg-yellow-500 text-white py-1 px-3 rounded mr-2 hover:bg-yellow-600"
                     >
                       Update
                     </button>
+                    {/* Delete button */}
                     <button 
                       onClick={() => handleDelete(booking.date)} 
                       className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"

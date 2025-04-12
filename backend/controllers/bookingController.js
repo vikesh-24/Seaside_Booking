@@ -36,11 +36,19 @@ export const createBooking = async (req, res) => {
   };
   
 
-export const getAllBooking = async(req,res) => {
+export const getUserBooking = async(req,res) => {
     try {
-        const bookings = await Booking.find(); 
-        res.status(200).json({message:"Packages booked Are", data:bookings});
-    } catch (error) {
+       const {userId} = req.params; 
+       const user = await User.findById(userId).populate('bookings'); 
+
+       if(!user){
+        return res.status(404).json({message:"User Not Found"})
+       }
+
+       return res.status(200).json({message:"Booked Adventures are",data:user.bookings})
+    } 
+    
+    catch (error) {
         console.log(error);
         return res.status(500).json({message:"Error in Getting Bookings "});
         
