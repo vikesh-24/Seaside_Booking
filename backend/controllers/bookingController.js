@@ -56,6 +56,22 @@ export const getUserBooking = async(req,res) => {
 
 } 
 
+export const getAllBookings = async (req,res) => {
+  try {
+    const bookings = await Booking.find(); 
+
+    if(!bookings){
+      return res.status(404).json({message:"Bookings can't be found"})
+    }
+
+    return res.status(200).json({message:"All Bookings are",data:bookings})
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({message:"Error in Getting Bookings "});
+    
+  }
+}
+
 export const cancelBooking = async (req, res) => {
     try {
       const { bookingId } = req.params; // Get bookingId from the URL params
@@ -82,6 +98,32 @@ export const cancelBooking = async (req, res) => {
     } catch (error) {
       console.error("Error canceling booking:", error);
       return res.status(500).json({ message: "Error canceling the booking", error });
+    }
+  };
+
+  export const updateBooking = async (req, res) => {
+    try {
+      const { bookingId } = req.params;
+      const { date, totalPrice, packageName, numPeople } = req.body;
+  
+      // Find the booking
+      const booking = await Booking.findById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+  
+      // Update only the provided fields
+      if (date) booking.date = date;
+      if (totalPrice) booking.totalPrice = totalPrice;
+      if (packageName) booking.packageName = packageName;
+      if (numPeople) booking.numPeople = numPeople;
+  
+      const updatedBooking = await booking.save();
+  
+      return res.status(200).json({ message: "Booking updated successfully", booking: updatedBooking });
+    } catch (error) {
+      console.error("Error updating booking:", error);
+      return res.status(500).json({ message: "Error updating the booking", error: error.message });
     }
   };
   
