@@ -17,6 +17,7 @@ import TransactionList from './components/Transactionlist';
 import EditTransaction from './components/EditTransaction';
 import Home from './pages/Homepage';
 import BookingAnalysis from './components/BookingAnalysis';
+import StaffList from './components/StaffList';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
         <Route path='/editTransaction/:id' element={<EditTransaction/>}/>
         <Route path='/home' element={<Home/>}/>
         <Route path='/book/analysis' element={<BookingAnalysis/>}/>
+        <Route path='/staff-list' element={<StaffList/>}/>
       </Routes>
       
     </div>
